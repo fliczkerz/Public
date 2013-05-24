@@ -1,0 +1,39 @@
+- (void)newArticleWithPhotoTEST :(NSString*)subjectString :(NSString *)messageString :(NSData *)photo {
+    
+    NSData *imageData = photo;
+    NSString* urlString = [NSString stringWithFormat:@"http://buddylawyer.delisoft.co.th/new_article?access_token=%@",[self getToken]];
+    
+    NSString *postURL = [NSString stringWithFormat:@"sbj=%@&msg=%@&type=1",subjectString,messageString];
+
+    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
+    [request setURL:[NSURL URLWithString:urlString]];
+    [request setHTTPMethod:@"POST"];
+    
+    NSString *boundary = @"---------------------------14737809831466499882746641449";
+    NSString *contentType = [NSString stringWithFormat:@"multipart/form-data; boundary=%@",boundary];
+    [request addValue:contentType forHTTPHeaderField: @"Content-Type"];
+    
+    NSMutableData *body = [NSMutableData data];
+    [body appendData:[[NSString stringWithFormat:@"rn--%@rn",boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"uploadedfile\"; filename=\"test.png\"rn"] dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:[@"Content-Type: application/octet-streamrnrn" dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:[NSData dataWithData:imageData]];
+    [body appendData:[[NSString stringWithFormat:@"rn--%@--rn",boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    NSData *data = [postURL dataUsingEncoding:NSUTF8StringEncoding];
+
+    [body appendData:[NSData dataWithData:data]];
+
+    
+    [request setHTTPBody:body];
+    
+    NSURLResponse *response;
+    NSError *error;
+    
+    NSData *responData = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
+    
+    NSString *rawHtml = [[NSString alloc] initWithData:responData encoding:NSUTF8StringEncoding];
+    NSDictionary *result = [rawHtml JSONValue];
+    NSLog(@"HTML ================== \n%@",rawHtml);
+    NSLog(@"JSON ================== \n%@",result);
+}
